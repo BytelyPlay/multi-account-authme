@@ -47,7 +47,7 @@ processResources {
     // access widener
     processResources {
         from(rootProject.file("common/src/main/resources")) {
-            include("authme.accesswidener")
+            include(project.mod_id + ".accesswidener")
         }
     }
 

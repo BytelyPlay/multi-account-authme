@@ -44,6 +44,13 @@ public class AuthMethodScreen extends Screen
         Identifier.fromNamespaceAndPath("authme", "widget/offline_button_disabled"),
         Identifier.fromNamespaceAndPath("authme", "widget/offline_button_focused")
     );
+    /** The 'User Selection' textures. */
+    // TODO: Make the textures 20x20
+    public static final WidgetSprites USER_SELECTION_TEXTURES = new WidgetSprites(
+            Identifier.fromNamespaceAndPath("authme", "widget/user_selection"),
+            Identifier.fromNamespaceAndPath("authme", "widget/user_selection_disabled"),
+            Identifier.fromNamespaceAndPath("authme", "widget/user_selection_focused")
+    );
 
     /**
      * Constructs a new authentication method choice screen.
@@ -78,7 +85,7 @@ public class AuthMethodScreen extends Screen
 
         // Add a button for the 'Microsoft' authentication method
         ImageButton msButton = new ImageButton(
-            width / 2 - 20 - 10 - 4, height / 2 - 5, 20, 20,
+            width / 2 - 58, height / 2 - 5, 20, 20,
             MICROSOFT_BUTTON_TEXTURES,
             button -> {
                 // If 'Left Control' is being held, enforce user interaction
@@ -114,7 +121,7 @@ public class AuthMethodScreen extends Screen
 
         // Add a button for the 'Mojang (or legacy)' authentication method
         ImageButton mojangButton = new ImageButton(
-            width / 2 - 10, height / 2 - 5, 20, 20,
+            width / 2 - 34, height / 2 - 5, 20, 20,
             MOJANG_BUTTON_TEXTURES,
             ConfirmLinkScreen.confirmLink(this, AuthMe.MOJANG_ACCOUNT_MIGRATION_FAQ_URL),
             Component.translatable("gui.authme.method.button.mojang")
@@ -129,13 +136,21 @@ public class AuthMethodScreen extends Screen
 
         // Add a button for the 'Offline' authentication method
         ImageButton offlineButton = new ImageButton(
-            width / 2 + 10 + 4, height / 2 - 5, 20, 20,
+            width / 2 - 10, height / 2 - 5, 20, 20,
             OFFLINE_BUTTON_TEXTURES,
             button -> minecraft.setScreen(new OfflineAuthScreen(this, parentScreen)),
             Component.translatable("gui.authme.method.button.offline")
         );
         offlineButton.setTooltip(Tooltip.create(Component.translatable("gui.authme.method.button.offline")));
         addRenderableWidget(offlineButton);
+
+        ImageButton userSelectionButton = new ImageButton(
+                width / 2 + 14, height / 2 - 5, 20, 20,
+                USER_SELECTION_TEXTURES,
+                button -> minecraft.setScreen(new UserSelectionScreen(parentScreen))
+        );
+        userSelectionButton.setTooltip(Tooltip.create(Component.translatable("gui.authme.method.button.user_selection")));
+        addRenderableWidget(userSelectionButton);
 
         // Add a button to go back
         addRenderableWidget(

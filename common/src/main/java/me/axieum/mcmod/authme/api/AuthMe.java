@@ -14,12 +14,12 @@ public final class AuthMe
     /**
      * The mod identifier.
      */
-    public static final String MOD_ID = "authme";
+    public static final String MOD_ID = "multiaccauthme";
 
     /**
      * The mod display name.
      */
-    public static final String MOD_NAME = "Auth Me";
+    public static final String MOD_NAME = "Multi-Account Auth Me";
 
     /**
      * The mod logger.
