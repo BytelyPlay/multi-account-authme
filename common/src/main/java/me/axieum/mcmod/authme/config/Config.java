@@ -1,12 +1,17 @@
-package me.axieum.mcmod.authme.api;
+package me.axieum.mcmod.authme.config;
 
-import java.util.Objects;
+import java.util.*;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.teamresourceful.resourcefulconfig.api.annotations.Category;
 import com.teamresourceful.resourcefulconfig.api.annotations.ConfigEntry;
 import com.teamresourceful.resourcefulconfig.api.annotations.ConfigInfo;
 import com.teamresourceful.resourcefulconfig.api.annotations.ConfigInfo.Link;
 
+import com.teamresourceful.resourcefulconfig.api.annotations.ConfigObject;
+import com.teamresourceful.resourcefulconfig.api.types.entries.SerializableObject;
+import me.axieum.mcmod.authme.api.AuthMe;
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils;
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils.MicrosoftPrompt;
 
@@ -77,7 +82,8 @@ public class Config
         public LoginMethods() {}
 
         /** Login via Microsoft configuration schema. */
-        @Category(value = "microsoft")
+        @Category(value = "microsoft",
+                categories = Config.LoginMethods.Microsoft.RefreshTokens.class)
         @ConfigInfo(
             titleTranslation = "text.rconfig.authme.option.methods.microsoft",
             descriptionTranslation = "text.rconfig.authme.option.methods.microsoft.description"
@@ -136,6 +142,18 @@ public class Config
                     && Objects.equals(xboxXstsUrl, MicrosoftUtils.XBOX_XSTS_URL)
                     && Objects.equals(mcAuthUrl, MicrosoftUtils.MC_AUTH_URL)
                     && Objects.equals(mcProfileUrl, MicrosoftUtils.MC_PROFILE_URL);
+            }
+            @Category(value = "refreshTokens")
+            @ConfigInfo(
+                    titleTranslation = "text.rconfig.authme.option.methods.refresh_tokens",
+                    descriptionTranslation = "text.rconfig.authme.option.methods.refresh_tokens.description"
+            )
+            public static class RefreshTokens {
+                public RefreshTokens() {}
+
+                @ConfigEntry(id = "refreshTokenPairs", translation = "text.rconfig.authme.option.methods.refreshTokens.pairs")
+                public static final SerializableMapWrapper<String, String> refreshTokens =
+                        new SerializableMapWrapper<>(new HashMap<>());
             }
         }
 

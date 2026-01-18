@@ -44,7 +44,7 @@ import net.minecraft.client.User;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Util;
 
-import me.axieum.mcmod.authme.api.Config;
+import me.axieum.mcmod.authme.config.Config;
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
 /**
@@ -72,7 +72,7 @@ public final class MicrosoftUtils
     private static final RandomGenerator SECURE_RANDOM = new SecureRandom();
 
     /** The default client id used in the configuration. */
-    public static final String CLIENT_ID = "unavailable";
+    public static final String CLIENT_ID = "PUT_HERE";
     /** The default authorization url used in the configuration. */
     public static final String AUTHORIZE_URL = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
     /** The default token url used in the configuration. */

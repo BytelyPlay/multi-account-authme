@@ -7,7 +7,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-import me.axieum.mcmod.authme.api.Config;
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 

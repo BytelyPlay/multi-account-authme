@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.network.chat.Component;
 
-import me.axieum.mcmod.authme.api.Config;
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.api.gui.screen.AuthMethodScreen;
 import me.axieum.mcmod.authme.api.gui.widget.AuthButtonWidget;
 import me.axieum.mcmod.authme.api.util.SessionUtils;

@@ -1,6 +1,7 @@
 package me.axieum.mcmod.authme.api;
 
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator;
+import me.axieum.mcmod.authme.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

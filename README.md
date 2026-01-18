@@ -7,3 +7,4 @@ I might never develop this because of azure app non-sense so yeah. \
 
 # TODO
 1. Get better button textures for the user selection menu.
+2. Encrypt Refresh Tokens

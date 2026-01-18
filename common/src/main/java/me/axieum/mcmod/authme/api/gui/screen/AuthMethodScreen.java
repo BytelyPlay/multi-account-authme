@@ -15,7 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 import me.axieum.mcmod.authme.api.AuthMe;
-import me.axieum.mcmod.authme.api.Config;
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
