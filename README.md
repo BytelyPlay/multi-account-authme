@@ -1,3 +1,8 @@
+This is a fork of https://github.com/axieum/authme/ that supports multiple accounts \
+It also saves the credentials so you don't have to keep authorizing it... \
+It is not complete so do not use it and it still uses the original azure app thing so I also need to change that \
+but first I want to get to know a bit of the codebase
+
 <div align="center">
 
 <img alt="Auth Me Icon" src="common/src/main/resources/icon.png" width="128">
