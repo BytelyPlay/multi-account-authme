@@ -55,6 +55,8 @@ import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
  */
 public final class MicrosoftUtils
 {
+    public static final String NO_REFRESH_TOKEN = "NO_REFRESH_TOKEN";
+
     /**
      * A reusable Apache HTTP request config
      *
@@ -280,7 +282,7 @@ public final class MicrosoftUtils
     }
 
     /**
-     * Exchanges a Microsoft auth code for an access token.
+     * Exchanges a Microsoft auth code for an access token and a refresh token (Access Token, Refresh Token).
      *
      * <p>NB: You must manually interrupt the executor thread if the
      * completable future is cancelled!
@@ -289,7 +291,7 @@ public final class MicrosoftUtils
      * @param executor executor to run the login task on
      * @return completable future for the Microsoft access token
      */
-    public static CompletableFuture<String> acquireMSAccessToken(final String authCode, final Executor executor)
+    public static CompletableFuture<Map.Entry<@NotNull String, @Nullable String>> acquireMSAccessRefreshToken(final String authCode, final Executor executor)
     {
         return CompletableFuture.supplyAsync(() -> {
             LOGGER.info("Exchanging Microsoft auth code for an access token...");
@@ -319,7 +321,9 @@ public final class MicrosoftUtils
 
                 // Attempt to parse the response body as JSON and extract the access token
                 final JsonObject json = GsonHelper.parse(EntityUtils.toString(res.getEntity()));
-                return Optional.ofNullable(json.get("access_token"))
+                String accessToken;
+                String refreshToken;
+                accessToken = Optional.ofNullable(json.get("access_token"))
                                .map(JsonElement::getAsString)
                                .filter(token -> !token.isBlank())
                                // If present, log success and return
@@ -336,6 +340,21 @@ public final class MicrosoftUtils
                                        json.get("error_description").getAsString()
                                    ) : "There was no access token or error description present."
                                ));
+                refreshToken = Optional.ofNullable(json.get("refresh_token"))
+                        .map(JsonElement::getAsString)
+                        .filter(token -> !token.isBlank())
+                        // If present, log success and return
+                        .map(token -> {
+                            LOGGER.info("Acquired Microsoft refresh token! ({})",
+                                    StringUtils.abbreviateMiddle(token, "...", 32));
+                            return token;
+                        })
+                        // Otherwise, throw an exception with the error description if present
+                        .orElse(null);
+                if (refreshToken == null) {
+                    LOGGER.warn("Refresh Token was unable to be retrieved.");
+                }
+                return Map.entry(accessToken, refreshToken == null ? NO_REFRESH_TOKEN : refreshToken);
             } catch (InterruptedException e) {
                 LOGGER.warn("Microsoft access token acquisition was cancelled!");
                 throw new CancellationException("Interrupted");
@@ -532,7 +551,7 @@ public final class MicrosoftUtils
                                })
                                // Otherwise, throw an exception with the error description if present
                                .orElseThrow(() -> new Exception(
-                                   json.has("error") ? String.format(
+                                   json.has("errorMessage") ? String.format(
                                        "%s: %s", json.get("error").getAsString(), json.get("errorMessage").getAsString()
                                    ) : "There was no access token or error description present."
                                ));

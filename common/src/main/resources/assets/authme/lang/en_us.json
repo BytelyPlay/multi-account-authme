@@ -12,7 +12,7 @@
   "gui.authme.method.title": "Pick a login method",
   "gui.authme.method.greeting": "Hello, %s!",
   "gui.authme.method.button.microsoft": "Microsoft",
-  "gui.authme.method.button.microsoft.selectAccount": "Ctrl + click to choose account",
+  "gui.authme.method.button.microsoft.selectAccount": "Ctrl + click to choose account, This adds an account and logs you into the account you chose. You need to do this periodically since refresh tokens expire.",
   "gui.authme.method.button.mojang": "Mojang (or legacy)",
   "gui.authme.method.button.mojang.unavailable": "Unavailable, click to learn more",
   "gui.authme.method.button.offline": "Offline",

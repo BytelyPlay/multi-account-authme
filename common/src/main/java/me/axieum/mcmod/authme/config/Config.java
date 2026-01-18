@@ -151,8 +151,8 @@ public class Config
             public static class RefreshTokens {
                 public RefreshTokens() {}
 
-                @ConfigEntry(id = "refreshTokenPairs", translation = "text.rconfig.authme.option.methods.refreshTokens.pairs")
-                public static final SerializableMapWrapper<String, String> refreshTokens =
+                @ConfigEntry(id = "uuidRefreshTokenPairs", translation = "text.rconfig.authme.option.methods.refreshTokens.pairs")
+                public static final SerializableMapWrapper<String, String> uuidRefreshTokenPairs =
                         new SerializableMapWrapper<>(new HashMap<>());
             }
         }

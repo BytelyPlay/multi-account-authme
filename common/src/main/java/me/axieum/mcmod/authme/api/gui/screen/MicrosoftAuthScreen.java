@@ -3,7 +3,9 @@ package me.axieum.mcmod.authme.api.gui.screen;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
+import me.axieum.mcmod.authme.config.Config;
 import org.apache.http.conn.ConnectTimeoutException;
 
 import net.minecraft.ChatFormatting;
@@ -52,6 +54,8 @@ public class MicrosoftAuthScreen extends AuthScreen
         super.init();
         assert minecraft != null;
 
+        AtomicReference<String> refreshToken = new AtomicReference<>(MicrosoftUtils.NO_REFRESH_TOKEN);
+
         // Add a title
         StringWidget titleWidget = addRenderableWidget(new StringWidget(title.copy().withColor(0xffffff), font));
         AuthScreen.centerPosition(titleWidget, this, 0, -20);
@@ -93,13 +97,15 @@ public class MicrosoftAuthScreen extends AuthScreen
             // Exchange the Microsoft auth code for an access token
             .thenComposeAsync(msAuthCode -> {
                 updateStatusWidget(client, "gui.authme.microsoft.status.msAccessToken");
-                return MicrosoftUtils.acquireMSAccessToken(msAuthCode, executor);
+                return MicrosoftUtils.acquireMSAccessRefreshToken(msAuthCode, executor);
             })
 
             // Exchange the Microsoft access token for an Xbox access token
-            .thenComposeAsync(msAccessToken -> {
+            .thenComposeAsync(msAccessRefreshPair -> {
                 updateStatusWidget(client, "gui.authme.microsoft.status.xboxAccessToken");
-                return MicrosoftUtils.acquireXboxAccessToken(msAccessToken, executor);
+                refreshToken.set(msAccessRefreshPair.getValue());
+
+                return MicrosoftUtils.acquireXboxAccessToken(msAccessRefreshPair.getKey(), executor);
             })
 
             // Exchange the Xbox access token for an XSTS token
@@ -124,6 +130,11 @@ public class MicrosoftAuthScreen extends AuthScreen
 
             // Update the game session and greet the player
             .thenAccept(user -> {
+                Config.LoginMethods.Microsoft.RefreshTokens
+                        .uuidRefreshTokenPairs
+                        .getMap()
+                        .put(user.getProfileId().toString(), refreshToken.get());
+                LOGGER.debug("Map: " + Config.LoginMethods.Microsoft.RefreshTokens.uuidRefreshTokenPairs);
                 // Apply the new session
                 SessionUtils.setUser(user);
                 // Add a toast that greets the player
