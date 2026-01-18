@@ -1,6 +1,7 @@
-This is a fork of https://github.com/axieum/authme/ that supports multiple accounts \
-It also saves the refresh tokens so you don't have to keep authorizing it... \
-You need to set up a CLIENT_ID though, I don't recommend using the original mod's one.
+This is a fork of https://github.com/axieum/authme/ that supports multiple accounts. \
+It also saves the refresh tokens so you don't have to keep authorizing it. \
+You need to set up a CLIENT_ID though, I don't recommend using the original mod's one. \
+This project is currently non-functional, it's very INDEV. Also, not to mention the security issues with storing refresh tokens in plain text.
 
 # This wouldn't even have been considered if it wasn't for axieum with his original project ALL CREDIT GOES TO HIM.
 
