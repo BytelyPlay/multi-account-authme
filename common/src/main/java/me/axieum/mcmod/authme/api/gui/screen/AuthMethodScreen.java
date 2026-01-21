@@ -144,6 +144,7 @@ public class AuthMethodScreen extends Screen
         offlineButton.setTooltip(Tooltip.create(Component.translatable("gui.authme.method.button.offline")));
         addRenderableWidget(offlineButton);
 
+        // TODO: Make this not a separate button but somehow embedded in the microsoft auth stuff.
         ImageButton userSelectionButton = new ImageButton(
                 width / 2 + 14, height / 2 - 5, 20, 20,
                 USER_SELECTION_TEXTURES,

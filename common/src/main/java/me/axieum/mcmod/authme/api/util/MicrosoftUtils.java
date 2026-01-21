@@ -74,7 +74,7 @@ public final class MicrosoftUtils
     private static final RandomGenerator SECURE_RANDOM = new SecureRandom();
 
     /** The default client id used in the configuration. */
-    public static final String CLIENT_ID = "PUT_HERE";
+    public static final String CLIENT_ID = "9910bfa8-9924-4169-8264-fbb75752ebba";
     /** The default authorization url used in the configuration. */
     public static final String AUTHORIZE_URL = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize";
     /** The default token url used in the configuration. */

@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import me.axieum.mcmod.authme.config.Config;
+import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.apache.http.conn.ConnectTimeoutException;
 
 import net.minecraft.ChatFormatting;
@@ -130,11 +130,10 @@ public class MicrosoftAuthScreen extends AuthScreen
 
             // Update the game session and greet the player
             .thenAccept(user -> {
-                Config.LoginMethods.Microsoft.RefreshTokens
+                SecretsStorage
                         .uuidRefreshTokenPairs
-                        .getMap()
                         .put(user.getProfileId().toString(), refreshToken.get());
-                LOGGER.debug("Map: " + Config.LoginMethods.Microsoft.RefreshTokens.uuidRefreshTokenPairs);
+                LOGGER.info("Map: " + SecretsStorage.uuidRefreshTokenPairs);
                 // Apply the new session
                 SessionUtils.setUser(user);
                 // Add a toast that greets the player
