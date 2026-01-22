@@ -18,13 +18,13 @@ import java.util.Map;
 public class SecretsStorage {
     public static HashMap<String, String> uuidRefreshTokenPairs = new HashMap<>();
 
-    private final static Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets");
+    private final static Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json");
     private static final Logger log = LoggerFactory.getLogger(SecretsStorage.class);
 
-    private final Gson GSON = new Gson();
-    private final String REFRESH_TOKEN_KEY = "refresh_tokens";
+    private static final Gson GSON = new Gson();
+    private static final String REFRESH_TOKEN_KEY = "refresh_tokens";
 
-    public void save() {
+    public static void save() {
         try {
             JsonObject root = new JsonObject();
             root.add(REFRESH_TOKEN_KEY, GSON.toJsonTree(uuidRefreshTokenPairs));
@@ -35,7 +35,7 @@ public class SecretsStorage {
         }
     }
 
-    public void load() {
+    public static void load() {
         try {
             if (Files.exists(FILE_TO_SAVE_TO)) {
                 JsonObject root = GSON.fromJson(Files.readString(FILE_TO_SAVE_TO), JsonObject.class);

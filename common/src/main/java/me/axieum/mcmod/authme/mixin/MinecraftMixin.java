@@ -4,6 +4,8 @@ import java.io.File;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.axieum.mcmod.authme.config.SecretsStorage;
+import net.minecraft.client.main.GameConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,6 +16,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.server.Services;
 
 import me.axieum.mcmod.authme.mixinHelper.YggdrasilAuthenticationServiceGetter;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Saves the YggdrasilAuthenticationService from initialization to be retrieved later.
@@ -41,5 +45,10 @@ public abstract class MinecraftMixin implements YggdrasilAuthenticationServiceGe
     public YggdrasilAuthenticationService authme$getAuthService()
     {
         return this.authme$authService;
+    }
+
+    @Inject(method = "destroy", at = @At("HEAD"))
+    private void destroy(CallbackInfo ci) {
+        SecretsStorage.save();
     }
 }

@@ -8,3 +8,4 @@ This project is currently non-functional, it's very INDEV. Also, not to mention 
 # TODO
 1. Get better button textures for the user selection menu.
 2. Encrypt Refresh Tokens
+3. Save secrets periodically, not just on startup/shutdown

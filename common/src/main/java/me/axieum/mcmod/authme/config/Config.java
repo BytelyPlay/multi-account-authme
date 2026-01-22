@@ -78,8 +78,7 @@ public class Config
         public LoginMethods() {}
 
         /** Login via Microsoft configuration schema. */
-        @Category(value = "microsoft",
-                categories = SecretsStorage.class)
+        @Category(value = "microsoft")
         @ConfigInfo(
             titleTranslation = "text.rconfig.authme.option.methods.microsoft",
             descriptionTranslation = "text.rconfig.authme.option.methods.microsoft.description"

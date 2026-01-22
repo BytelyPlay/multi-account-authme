@@ -2,6 +2,7 @@ package me.axieum.mcmod.authme.api;
 
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator;
 import me.axieum.mcmod.authme.config.Config;
+import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,10 @@ public final class AuthMe
      */
     public static void init()
     {
+        SecretsStorage.load();
         // Register the configuration
         CONFIG.register(Config.class);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(SecretsStorage::save));
     }
 }
