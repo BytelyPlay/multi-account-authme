@@ -289,6 +289,7 @@ public final class MicrosoftUtils
      *
      * @param grant Microsoft auth code or refresh token
      * @param executor executor to run the login task on
+     * @param useRefreshToken true to use a refresh token false to use an authcode
      * @return completable future for the Microsoft access and refresh token
      */
     public static CompletableFuture<Map.Entry<@NotNull String, @Nullable String>> acquireMSAccessRefreshToken(final String grant, final boolean useRefreshToken, final Executor executor)
