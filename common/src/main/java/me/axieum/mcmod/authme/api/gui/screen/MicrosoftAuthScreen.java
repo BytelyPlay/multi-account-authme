@@ -1,10 +1,13 @@
 package me.axieum.mcmod.authme.api.gui.screen;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import me.axieum.mcmod.authme.config.PlayerIdentifier;
 import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.apache.http.conn.ConnectTimeoutException;
 
@@ -18,6 +21,8 @@ import net.minecraft.network.chat.Component;
 
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
+import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
+
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
 /**
@@ -33,6 +38,10 @@ public class MicrosoftAuthScreen extends AuthScreen
     private StringWidget statusWidget = null;
     // True if Microsoft should prompt to select an account
     private final boolean selectAccount;
+    // True if we should use a refresh token
+    private final boolean useRefreshToken;
+    // refresh token is useRefreshToken is true
+    private final String refreshToken;
 
     /**
      * Constructs a new authentication via Microsoft screen.
@@ -46,6 +55,24 @@ public class MicrosoftAuthScreen extends AuthScreen
         super(Component.translatable("gui.authme.microsoft.title"), parentScreen, successScreen);
         this.selectAccount = selectAccount;
         this.closeOnSuccess = true;
+        this.useRefreshToken = false;
+
+        this.refreshToken = "";
+    }
+
+    /**
+     * Constructs a useRefreshToken = true MicrosoftAuthScreen.
+     * @param parentScreen  parent (or last) screen that opened this screen
+     * @param successScreen screen to be returned to after a successful login
+     * @param refreshToken the refresh token
+     */
+    public MicrosoftAuthScreen(Screen parentScreen, Screen successScreen, String refreshToken) {
+        super(Component.translatable("gui.authme.microsoft.title"), parentScreen, successScreen);
+        this.selectAccount = false;
+        this.closeOnSuccess = true;
+        this.useRefreshToken = true;
+
+        this.refreshToken = refreshToken;
     }
 
     @Override
@@ -85,19 +112,25 @@ public class MicrosoftAuthScreen extends AuthScreen
         // Prepare a new executor thread to run the login task on
         executor = Executors.newSingleThreadExecutor();
 
+        CompletableFuture<String> initialTask;
+
         // Start the login task
-        task = MicrosoftUtils
-            // Acquire a Microsoft auth code
-            .acquireMSAuthCode(
-                success -> Component.translatable("gui.authme.microsoft.browser").getString(),
-                executor,
-                selectAccount ? MicrosoftUtils.MicrosoftPrompt.SELECT_ACCOUNT : null
-            )
+        if (!useRefreshToken) {
+            initialTask = MicrosoftUtils
+                    // Acquire a Microsoft auth code
+                    .acquireMSAuthCode(
+                            success -> Component.translatable("gui.authme.microsoft.browser").getString(),
+                            executor,
+                            selectAccount ? MicrosoftUtils.MicrosoftPrompt.SELECT_ACCOUNT : null
+                    );
+        } else {
+            initialTask = CompletableFuture.completedFuture(this.refreshToken);
+        }
 
             // Exchange the Microsoft auth code for an access token
-            .thenComposeAsync(msAuthCode -> {
+            task = initialTask.thenComposeAsync(msAuthCode -> {
                 updateStatusWidget(client, "gui.authme.microsoft.status.msAccessToken");
-                return MicrosoftUtils.acquireMSAccessRefreshToken(msAuthCode, executor);
+                return MicrosoftUtils.acquireMSAccessRefreshToken(msAuthCode, useRefreshToken, executor);
             })
 
             // Exchange the Microsoft access token for an Xbox access token
@@ -130,10 +163,11 @@ public class MicrosoftAuthScreen extends AuthScreen
 
             // Update the game session and greet the player
             .thenAccept(user -> {
-                SecretsStorage
-                        .uuidRefreshTokenPairs
-                        .put(user.getProfileId().toString(), refreshToken.get());
-                LOGGER.info("Map: " + SecretsStorage.uuidRefreshTokenPairs);
+                if (!Objects.equals(refreshToken.get(), "")) {
+                    SecretsStorage
+                            .playerRefreshTokenPairs
+                            .add(new PlayerIdentifier(user.getName(), user.getProfileId().toString(), refreshToken.get()));
+                }
                 // Apply the new session
                 SessionUtils.setUser(user);
                 // Add a toast that greets the player

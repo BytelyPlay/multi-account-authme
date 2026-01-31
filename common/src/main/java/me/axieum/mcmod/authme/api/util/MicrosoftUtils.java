@@ -287,11 +287,11 @@ public final class MicrosoftUtils
      * <p>NB: You must manually interrupt the executor thread if the
      * completable future is cancelled!
      *
-     * @param authCode Microsoft auth code
+     * @param grant Microsoft auth code or refresh token
      * @param executor executor to run the login task on
-     * @return completable future for the Microsoft access token
+     * @return completable future for the Microsoft access and refresh token
      */
-    public static CompletableFuture<Map.Entry<@NotNull String, @Nullable String>> acquireMSAccessRefreshToken(final String authCode, final Executor executor)
+    public static CompletableFuture<Map.Entry<@NotNull String, @Nullable String>> acquireMSAccessRefreshToken(final String grant, final boolean useRefreshToken, final Executor executor)
     {
         return CompletableFuture.supplyAsync(() -> {
             LOGGER.info("Exchanging Microsoft auth code for an access token...");
@@ -303,8 +303,8 @@ public final class MicrosoftUtils
                 request.setEntity(new UrlEncodedFormEntity(
                     List.of(
                         new BasicNameValuePair("client_id", Config.LoginMethods.Microsoft.clientId),
-                        new BasicNameValuePair("grant_type", "authorization_code"),
-                        new BasicNameValuePair("code", authCode),
+                        new BasicNameValuePair("grant_type", !useRefreshToken ? "authorization_code" : "refresh_token"),
+                        new BasicNameValuePair(!useRefreshToken ? "code" : "refresh_token", grant),
                         // We must provide the exact redirect URI that was used to obtain the auth code
                         new BasicNameValuePair(
                             "redirect_uri",
@@ -321,9 +321,9 @@ public final class MicrosoftUtils
 
                 // Attempt to parse the response body as JSON and extract the access token
                 final JsonObject json = GsonHelper.parse(EntityUtils.toString(res.getEntity()));
-                String accessToken;
-                String refreshToken;
-                accessToken = Optional.ofNullable(json.get("access_token"))
+                String accessTokenAcquired;
+                String refreshTokenAcquired;
+                accessTokenAcquired = Optional.ofNullable(json.get("access_token"))
                                .map(JsonElement::getAsString)
                                .filter(token -> !token.isBlank())
                                // If present, log success and return
@@ -340,7 +340,7 @@ public final class MicrosoftUtils
                                        json.get("error_description").getAsString()
                                    ) : "There was no access token or error description present."
                                ));
-                refreshToken = Optional.ofNullable(json.get("refresh_token"))
+                refreshTokenAcquired = Optional.ofNullable(json.get("refresh_token"))
                         .map(JsonElement::getAsString)
                         .filter(token -> !token.isBlank())
                         // If present, log success and return
@@ -351,10 +351,10 @@ public final class MicrosoftUtils
                         })
                         // Otherwise, throw an exception with the error description if present
                         .orElse(null);
-                if (refreshToken == null) {
+                if (refreshTokenAcquired == null) {
                     LOGGER.warn("Refresh Token was unable to be retrieved.");
                 }
-                return Map.entry(accessToken, refreshToken == null ? NO_REFRESH_TOKEN : refreshToken);
+                return Map.entry(accessTokenAcquired, refreshTokenAcquired == null ? NO_REFRESH_TOKEN : refreshTokenAcquired);
             } catch (InterruptedException e) {
                 LOGGER.warn("Microsoft access token acquisition was cancelled!");
                 throw new CancellationException("Interrupted");
