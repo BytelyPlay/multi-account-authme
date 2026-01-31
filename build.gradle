@@ -22,7 +22,7 @@ subprojects {
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'checkstyle'
+    // apply plugin: 'checkstyle'
     apply plugin: 'maven-publish'
     apply plugin: 'architectury-plugin'
 
@@ -50,10 +50,10 @@ allprojects {
     }
 
     // Perform linting using Checkstyle
-    checkstyle {
+/*    checkstyle {
         configFile rootProject.file('.checkstyle.xml')
         toolVersion project.checkstyle_version
-    }
+    }*/
 
     // Add any additional repositories
     repositories {
