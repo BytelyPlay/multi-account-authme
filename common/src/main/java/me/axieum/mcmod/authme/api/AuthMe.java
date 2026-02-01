@@ -1,6 +1,7 @@
 package me.axieum.mcmod.authme.api;
 
 import com.teamresourceful.resourcefulconfig.api.loader.Configurator;
+import me.axieum.mcmod.authme.api.gui.screen.UserSelectionScreen;
 import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ public final class AuthMe
     {
         // Register the configuration
         CONFIG.register(Config.class);
+
+        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) SecretsStorage.load();
 
         Runtime.getRuntime().addShutdownHook(new Thread(SecretsStorage::save));
     }

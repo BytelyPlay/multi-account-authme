@@ -13,6 +13,7 @@ import java.util.List;
 
 public class UserSelectionScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserSelectionScreen.class);
+
     private static final int CHAR_SIZE = 15;
     private static final int GAP_BETWEEN_BUTTONS = 5;
     private static final int HEIGHT = 20;
@@ -35,14 +36,14 @@ public class UserSelectionScreen extends Screen {
                 minecraft.setScreen(new MicrosoftAuthScreen(this, successScreen, identifier.refreshToken()));
             })
                     .bounds(
-                    i + (lastButton == null ? GAP_BETWEEN_BUTTONS : lastButton.getX() + lastButton.getWidth() + GAP_BETWEEN_BUTTONS),
+                            i + (lastButton == null ? GAP_BETWEEN_BUTTONS : lastButton.getX() + lastButton.getWidth() + GAP_BETWEEN_BUTTONS),
                             0,
                             CHAR_SIZE * identifier.username().length(),
                             HEIGHT
-            ).build();
+                    ).build();
             addRenderableWidget(button);
 
             lastButton = button;
-       }
+        }
     }
 }

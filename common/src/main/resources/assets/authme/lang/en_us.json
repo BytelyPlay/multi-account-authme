@@ -64,5 +64,6 @@
   "text.rconfig.authme.option.methods.offline.lastUsername": "Last Used Username",
   "text.rconfig.authme.option.methods.refresh_tokens": "Refresh Tokens",
   "text.rconfig.authme.option.methods.refresh_tokens.description": "Refresh Tokens For The User Selection Feature",
-  "text.rconfig.authme.option.methods.refreshTokens.pairs": "Refresh Token Pairs"
+  "text.rconfig.authme.option.methods.refreshTokens.pairs": "Refresh Token Pairs",
+  "text.rconfig.authme.option.methods.microsoft.encryptRefreshTokens": "Highly recommended, encrypts refresh tokens with a passphrase."
 }

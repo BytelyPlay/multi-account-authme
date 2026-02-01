@@ -124,6 +124,9 @@ public class Config
             @ConfigEntry(id = "mcProfileUrl", translation = "text.rconfig.authme.option.methods.microsoft.mcProfileUrl")
             public static String mcProfileUrl = MicrosoftUtils.MC_PROFILE_URL;
 
+            @ConfigEntry(id = "encryptRefreshTokens", translation = "text.rconfig.authme.option.methods.microsoft.encryptRefreshTokens")
+            public static boolean encryptRefreshTokens = true;
+
             /**
              * Determines whether the configured URLs differ from the defaults.
              *

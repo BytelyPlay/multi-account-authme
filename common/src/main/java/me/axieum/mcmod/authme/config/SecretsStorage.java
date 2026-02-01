@@ -48,7 +48,7 @@ public class SecretsStorage {
 
     public static void save() {
         try {
-            if (passPhrase.isEmpty()) {
+            if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
             }
 
@@ -68,14 +68,17 @@ public class SecretsStorage {
 
     public static void load() {
         try {
-            if (passPhrase.isEmpty()) {
+            if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
             }
 
             if (Files.exists(FILE_TO_SAVE_TO)) {
-                JsonObject root = GSON.fromJson(Files.readString(FILE_TO_SAVE_TO), JsonObject.class);
+                byte[] fileData = Files.readAllBytes(FILE_TO_SAVE_TO);
+                if (Config.LoginMethods.Microsoft.encryptRefreshTokens) fileData = decrypt(passPhrase, fileData);
 
+                JsonObject root = GSON.fromJson(new String(fileData, StandardCharsets.UTF_8), JsonObject.class);
                 JsonElement element = root.get(REFRESH_TOKEN_KEY);
+
                 playerRefreshTokenPairs = GSON.fromJson(element, new TypeToken<
                         List<PlayerIdentifier>
                         >()
