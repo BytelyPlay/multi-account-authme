@@ -1,7 +1,7 @@
 package me.axieum.mcmod.authme.api.gui.screen;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +21,6 @@ import net.minecraft.network.chat.Component;
 
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
-import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
@@ -163,10 +162,20 @@ public class MicrosoftAuthScreen extends AuthScreen
 
             // Update the game session and greet the player
             .thenAccept(user -> {
-                if (!Objects.equals(refreshToken.get(), "")) {
+                if (!Objects.equals(refreshToken.get(), MicrosoftUtils.NO_REFRESH_TOKEN)) {
+                    String username = user.getName();
+                    String uuid = user.getProfileId().toString();
+
+                    Optional<PlayerIdentifier> optionalIdentifier =
+                            SecretsStorage.playerRefreshTokenPairs
+                                    .stream()
+                                    .filter(identifier -> Objects.equals(identifier.uuid(), uuid)).findFirst();
+                    if (optionalIdentifier.isPresent())
+                        SecretsStorage.playerRefreshTokenPairs.remove(optionalIdentifier.orElseThrow());
+
                     SecretsStorage
                             .playerRefreshTokenPairs
-                            .add(new PlayerIdentifier(user.getName(), user.getProfileId().toString(), refreshToken.get()));
+                            .add(new PlayerIdentifier(username, uuid, refreshToken.get()));
                 }
                 // Apply the new session
                 SessionUtils.setUser(user);

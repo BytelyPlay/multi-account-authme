@@ -43,7 +43,6 @@ public final class AuthMe
      */
     public static void init()
     {
-        SecretsStorage.load();
         // Register the configuration
         CONFIG.register(Config.class);
 
