@@ -10,6 +10,7 @@ import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import java.awt.*;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,8 +46,15 @@ public class SecretsStorage {
     public static void setPassPhrase(String newPassPhrase) {
         passPhrase = newPassPhrase;
     }
+    public static boolean isPassPhraseSet() {
+        return !passPhrase.isEmpty();
+    }
 
-    public static void save() {
+    /**
+     * Saves secrets if the passphrase is available, or we don't have to encrypt the refresh tokens.
+     * @return Success (true = success, false = failure)
+     */
+    public static boolean save() throws UncheckedIOException {
         try {
             if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
@@ -61,35 +69,53 @@ public class SecretsStorage {
             byte[] encrypted = encrypt(passPhrase, stringBytes);
 
             Files.write(FILE_TO_SAVE_TO, encrypted);
+            return true;
         } catch (IOException e) {
-            log.error("Couldn't serialize secrets", e);
+            throw new UncheckedIOException(e);
+        } catch (GeneralSecurityException e) {
+            log.warn("Tried to decrypt/encrypt and something went wrong. " +
+                    "This can just be an invalid passphrase (private key derived from the passphrase)");
+            return false;
         }
     }
 
-    public static void load() {
+    /**
+     * Loads secrets if the passphrase is available or we don't have to encrypt the refresh tokens.
+     * @return Success (true = success, false = failure, if there is no file it is treated as a success)
+     */
+    public static boolean load() throws UncheckedIOException{
         try {
             if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
             }
+            if (!Files.exists(FILE_TO_SAVE_TO)) return true;
 
-            if (Files.exists(FILE_TO_SAVE_TO)) {
-                byte[] fileData = Files.readAllBytes(FILE_TO_SAVE_TO);
-                if (Config.LoginMethods.Microsoft.encryptRefreshTokens) fileData = decrypt(passPhrase, fileData);
+            byte[] fileData = Files.readAllBytes(FILE_TO_SAVE_TO);
+            if (Config.LoginMethods.Microsoft.encryptRefreshTokens) fileData = decrypt(passPhrase, fileData);
 
-                JsonObject root = GSON.fromJson(new String(fileData, StandardCharsets.UTF_8), JsonObject.class);
-                JsonElement element = root.get(REFRESH_TOKEN_KEY);
+            JsonObject root = GSON.fromJson(new String(fileData, StandardCharsets.UTF_8), JsonObject.class);
+            JsonElement element = root.get(REFRESH_TOKEN_KEY);
 
-                playerRefreshTokenPairs = GSON.fromJson(element, new TypeToken<
-                        List<PlayerIdentifier>
-                        >()
-                {}.getType());
-            }
+            playerRefreshTokenPairs = GSON.fromJson(element, new TypeToken<
+                    ArrayList<PlayerIdentifier>
+                    >() {
+            }.getType());
+
+            return true;
         } catch (IOException e) {
-            log.error("Couldn't load secrets", e);
+            throw new UncheckedIOException(e);
+        } catch (GeneralSecurityException e) {
+            log.warn("Tried to decrypt/encrypt and something went wrong. " +
+                    "This can just be an invalid passphrase (private key derived from the passphrase)");
+            return false;
         }
     }
 
-    private static byte[] encrypt(String passPhrase, byte[] decrypted) {
+    private static byte[] encrypt(String passPhrase, byte[] decrypted) throws NoSuchAlgorithmException,
+            NoSuchPaddingException,
+            BadPaddingException,
+            IllegalBlockSizeException,
+            InvalidKeyException {
         try {
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
 
@@ -118,11 +144,14 @@ public class SecretsStorage {
             System.arraycopy(encrypted, 0, result, 0, encrypted.length);
 
             return result;
-        } catch (GeneralSecurityException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
-    private static byte[] decrypt(String passPhrase, byte[] encrypted) {
+    private static byte[] decrypt(String passPhrase, byte[] encrypted) throws NoSuchPaddingException,
+            InvalidKeyException,
+            IllegalBlockSizeException,
+            BadPaddingException {
         try {
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM);
 
@@ -149,7 +178,7 @@ public class SecretsStorage {
             cipher.update(encryptedData);
 
             return cipher.doFinal();
-        } catch (GeneralSecurityException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }

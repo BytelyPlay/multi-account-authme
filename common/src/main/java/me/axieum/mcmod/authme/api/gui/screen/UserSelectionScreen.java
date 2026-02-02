@@ -1,5 +1,6 @@
 package me.axieum.mcmod.authme.api.gui.screen;
 
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.config.PlayerIdentifier;
 import me.axieum.mcmod.authme.config.SecretsStorage;
 import net.minecraft.client.gui.components.Button;
@@ -7,9 +8,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class UserSelectionScreen extends Screen {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserSelectionScreen.class);
@@ -28,6 +26,9 @@ public class UserSelectionScreen extends Screen {
     @Override
     protected void init() {
         Button lastButton = null;
+
+        if (!SecretsStorage.isPassPhraseSet() &&
+                Config.LoginMethods.Microsoft.encryptRefreshTokens) minecraft.setScreen(new RequestPassPhraseScreen(this));
 
         for (int i = 0; i < SecretsStorage.playerRefreshTokenPairs.size(); i++) {
             PlayerIdentifier identifier = SecretsStorage.playerRefreshTokenPairs.get(i);

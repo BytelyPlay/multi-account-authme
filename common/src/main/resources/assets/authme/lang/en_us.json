@@ -39,6 +39,9 @@
   "gui.authme.userselect.title": "User Selection",
   "gui.authme.method.button.user_selection": "Select a user from the users you already logged in as.",
 
+  "gui.authme.request_pass_phrase.title": "Request Passphrase",
+  "gui.authme.request_pass_phrase.pass_phrase_input": "Your Passphrase",
+
   "text.rconfig.authme.title": "Auth Me",
   "text.rconfig.authme.description": "Authenticate yourself in Minecraft and re-validate your session",
   "text.rconfig.authme.option.authButton": "Auth Button",

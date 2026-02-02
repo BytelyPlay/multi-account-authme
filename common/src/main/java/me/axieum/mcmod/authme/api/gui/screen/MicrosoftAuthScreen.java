@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.config.PlayerIdentifier;
 import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -22,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
 
+import static me.axieum.mcmod.authme.api.AuthMe.CONFIG;
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
 /**
@@ -79,6 +81,9 @@ public class MicrosoftAuthScreen extends AuthScreen
     {
         super.init();
         assert minecraft != null;
+
+        if (!SecretsStorage.isPassPhraseSet() &&
+                Config.LoginMethods.Microsoft.encryptRefreshTokens) minecraft.setScreen(new RequestPassPhraseScreen(this));
 
         AtomicReference<String> refreshToken = new AtomicReference<>(MicrosoftUtils.NO_REFRESH_TOKEN);
 

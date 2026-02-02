@@ -47,8 +47,16 @@ public final class AuthMe
         // Register the configuration
         CONFIG.register(Config.class);
 
-        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) SecretsStorage.load();
+        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+            if (!SecretsStorage.load()) {
+                LOGGER.warn("Couldn't load secrets.");
+            }
+        }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(SecretsStorage::save));
+        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (!SecretsStorage.save()) {
+                LOGGER.warn("Couldn't save secrets.");
+            }
+        }));
     }
 }

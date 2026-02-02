@@ -4,9 +4,13 @@ import java.io.File;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.config.SecretsStorage;
 import net.minecraft.client.main.GameConfig;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -25,6 +29,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin implements YggdrasilAuthenticationServiceGetter
 {
+    @Shadow
+    @Final
+    private static Logger LOGGER;
+
     /** Constructs a new Minecraft mixin instance. */
     public MinecraftMixin() {}
 
@@ -49,6 +57,13 @@ public abstract class MinecraftMixin implements YggdrasilAuthenticationServiceGe
 
     @Inject(method = "destroy", at = @At("HEAD"))
     private void destroy(CallbackInfo ci) {
-        SecretsStorage.save();
+        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) SecretsStorage.save();
+        else {
+            if (!SecretsStorage.isPassPhraseSet()) return;
+
+            if (!SecretsStorage.save()) {
+                LOGGER.warn("Couldn't save secrets.");
+            }
+        }
     }
 }

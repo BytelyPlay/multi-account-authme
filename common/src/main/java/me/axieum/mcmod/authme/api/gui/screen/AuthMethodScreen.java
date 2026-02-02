@@ -17,6 +17,8 @@ import net.minecraft.resources.Identifier;
 import me.axieum.mcmod.authme.api.AuthMe;
 import me.axieum.mcmod.authme.config.Config;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
+import net.minecraft.world.phys.Vec2;
+
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
 /**

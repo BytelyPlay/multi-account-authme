@@ -1,0 +1,78 @@
+package me.axieum.mcmod.authme.api.gui.screen;
+
+import me.axieum.mcmod.authme.config.SecretsStorage;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
+import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Loads the passphrase and loads secrets.
+ */
+public class RequestPassPhraseScreen extends Screen {
+    private static final Logger log = LoggerFactory.getLogger(RequestPassPhraseScreen.class);
+
+    private static final int PASS_PHRASE_INPUT_CENTER_OFFSET_X = -100;
+    private static final int PASS_PHRASE_INPUT_CENTER_OFFSET_Y = -6;
+
+    private static final int PASS_PHRASE_INPUT_SIZE_X = 200;
+    private static final int PASS_PHRASE_INPUT_SIZE_Y = 20;
+
+    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_X = -100;
+    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_Y = 6;
+
+    private final Screen successScreen;
+    private String labelContent = "Type in your passphrase. If this is your first launch, type in your desired passphrase.";
+
+    public RequestPassPhraseScreen(Screen successScreen) {
+        super(
+                Component
+                .translatable("gui.authme.request_pass_phrase.title")
+                .withColor(CommonColors.GREEN)
+        );
+        this.successScreen = successScreen;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        EditBox input = new EditBox(
+                minecraft.font,
+                width / 2 + PASS_PHRASE_INPUT_CENTER_OFFSET_X,
+                height / 2 + PASS_PHRASE_INPUT_CENTER_OFFSET_Y,
+                PASS_PHRASE_INPUT_SIZE_X,
+                PASS_PHRASE_INPUT_SIZE_Y,
+                Component.translatable("gui.authme.request_pass_phrase.pass_phrase_input")
+        );
+        Button confirm = new Button.Builder(Component
+                .translatable("gui.authme.request_pass_phrase.confirm_button"),
+                (button) -> {
+            SecretsStorage.setPassPhrase(input.getValue());
+            if (SecretsStorage.load()) {
+                minecraft.setScreen(successScreen);
+            } else {
+                labelContent = "Wrong passphrase, Try Again.";
+            }
+        }).build();
+
+        this.addRenderableWidget(input);
+        this.addRenderableWidget(confirm);
+    }
+
+    @Override
+    public void render(@NonNull GuiGraphics graphics, int i, int j, float f) {
+        super.render(graphics, i, j, f);
+
+        graphics.drawString(minecraft.font,
+                labelContent,
+                width / 2 + LABEL_PHRASE_INPUT_CENTER_OFFSET_X,
+                height / 2 + LABEL_PHRASE_INPUT_CENTER_OFFSET_Y,
+                CommonColors.WHITE);
+    }
+}
