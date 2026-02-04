@@ -7,5 +7,4 @@ I'm not a cybersecurity specialist so I wouldn't expect my encryption to be top-
 
 # TODO
 1. Get better button textures for the user selection menu.
-2. Encrypt Refresh Tokens
-3. Save secrets periodically, not just on startup/shutdown
+2. Save secrets periodically, not just on startup/shutdown
