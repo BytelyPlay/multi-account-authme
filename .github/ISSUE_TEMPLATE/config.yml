@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: GitHub Discussions
-    url: https://github.com/axieum/authme/discussions
+    url: https://github.com/BytelyPlay/multi-account-authme/discussions
     about: Please ask and answer any questions regarding the mod here
   - name: About Fabric
     url: https://fabricmc.net/

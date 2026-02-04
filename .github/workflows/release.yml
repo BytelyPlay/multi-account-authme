@@ -88,7 +88,7 @@ jobs:
             fabric/build/libs/*-javadoc.jar
             fabric/build/devlibs/*-sources.jar
           version: ${{ needs.release.outputs.tag_name }}
-          changelog: For a list of changes, please refer to https://github.com/axieum/authme/releases/tag/${{ needs.release.outputs.tag_name }}
+          changelog: For a list of changes, please refer to https://github.com/BytelyPlay/multi-account-authme/releases/tag/${{ needs.release.outputs.tag_name }}
           loaders: |
             fabric
             quilt
@@ -110,7 +110,7 @@ jobs:
             neoforge/build/libs/*-javadoc.jar
             neoforge/build/devlibs/*-sources.jar
           version: ${{ needs.release.outputs.tag_name }}
-          changelog: For a list of changes, please refer to https://github.com/axieum/authme/releases/tag/${{ needs.release.outputs.tag_name }}
+          changelog: For a list of changes, please refer to https://github.com/BytelyPlay/multi-account-authme/releases/tag/${{ needs.release.outputs.tag_name }}
           loaders: |
             neoforge
           java: 21

@@ -28,7 +28,7 @@ import me.axieum.mcmod.authme.api.util.MicrosoftUtils.MicrosoftPrompt;
     links = {
         @Link(text = "CurseForge", icon = "curseforge", value = "https://curseforge.com/minecraft/mc-mods/auth-me"),
         @Link(text = "Modrinth", icon = "modrinth", value = "https://modrinth.com/mod/auth-me"),
-        @Link(text = "GitHub", icon = "github", value = "https://github.com/axieum/authme"),
+        @Link(text = "GitHub", icon = "github", value = "https://github.com/BytelyPlay/multi-account-authme"),
     }
 )
 public class Config

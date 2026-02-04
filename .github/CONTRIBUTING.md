@@ -132,7 +132,6 @@ You can check the project for any lint errors via `gradle check`.
 There are a collection of [Checkstyle tools][checkstyle:tools] available to add
 this functionality to your IDE.
 
-[changelog]: ../CHANGELOG.md
 [checkstyle]: https://github.com/checkstyle/checkstyle
 [checkstyle:config]: ../.checkstyle.xml
 [checkstyle:tools]: https://checkstyle.org/index.html#Related_Tools

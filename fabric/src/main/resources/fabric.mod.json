@@ -8,8 +8,8 @@
     "${mod_author}"
   ],
   "contact": {
-    "sources": "https://github.com/axieum/authme",
-    "issues": "https://github.com/axieum/authme/issues"
+    "sources": "https://github.com/BytelyPlay/multi-account-authme",
+    "issues": "https://github.com/BytelyPlay/multi-account-authme/issues"
   },
   "license": "${mod_license}",
   "icon": "icon.png",
