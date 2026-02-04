@@ -23,11 +23,17 @@ public class RequestPassPhraseScreen extends Screen {
     private static final int PASS_PHRASE_INPUT_SIZE_X = 200;
     private static final int PASS_PHRASE_INPUT_SIZE_Y = 20;
 
-    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_X = -100;
-    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_Y = 6;
+    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_X = -200;
+    private static final int LABEL_PHRASE_INPUT_CENTER_OFFSET_Y = -20;
+
+    private static final int CONFIRM_BUTTON_CENTER_OFFSET_X = -100;
+    private static final int CONFIRM_BUTTON_CENTER_OFFSET_Y = 40;
+
+    private static final int CONFIRM_BUTTON_SIZE_X = 200;
+    private static final int CONFIRM_BUTTON_SIZE_Y = 20;
 
     private final Screen successScreen;
-    private String labelContent = "Type in your passphrase. If this is your first launch, type in your desired passphrase.";
+    private Component labelContent = Component.translatable("gui.authme.request_pass_phrase.label.initial");
 
     public RequestPassPhraseScreen(Screen successScreen) {
         super(
@@ -57,9 +63,14 @@ public class RequestPassPhraseScreen extends Screen {
             if (SecretsStorage.load()) {
                 minecraft.setScreen(successScreen);
             } else {
-                labelContent = "Wrong passphrase, Try Again.";
+                labelContent = Component.translatable("gui.authme.request_pass_phrase.label.wrong");
+                SecretsStorage.setPassPhrase("");
             }
-        }).build();
+        })
+                .bounds(width / 2 + CONFIRM_BUTTON_CENTER_OFFSET_X,
+                        height / 2 + CONFIRM_BUTTON_CENTER_OFFSET_Y,
+                        CONFIRM_BUTTON_SIZE_X, CONFIRM_BUTTON_SIZE_Y)
+                .build();
 
         this.addRenderableWidget(input);
         this.addRenderableWidget(confirm);

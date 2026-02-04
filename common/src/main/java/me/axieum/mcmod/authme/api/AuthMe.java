@@ -53,7 +53,8 @@ public final class AuthMe
             }
         }
 
-        if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (Config.LoginMethods.Microsoft.encryptRefreshTokens && !SecretsStorage.isPassPhraseSet()) return;
             if (!SecretsStorage.save()) {
                 LOGGER.warn("Couldn't save secrets.");
             }

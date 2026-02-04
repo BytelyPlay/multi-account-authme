@@ -41,6 +41,9 @@
 
   "gui.authme.request_pass_phrase.title": "Request Passphrase",
   "gui.authme.request_pass_phrase.pass_phrase_input": "Your Passphrase",
+  "gui.authme.request_pass_phrase.confirm_button": "Confirm",
+  "gui.authme.request_pass_phrase.label.initial": "Type in your passphrase. If this is your first launch, type in your desired passphrase.",
+  "gui.authme.request_pass_phrase.label.wrong": "Wrong passphrase, try again.",
 
   "text.rconfig.authme.title": "Auth Me",
   "text.rconfig.authme.description": "Authenticate yourself in Minecraft and re-validate your session",

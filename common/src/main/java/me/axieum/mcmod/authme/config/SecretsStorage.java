@@ -7,8 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
-import java.awt.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -19,9 +20,13 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 // TODO: Passphrase Encryption
 public class SecretsStorage {
+    private static final Logger log = LoggerFactory.getLogger(SecretsStorage.class);
+
+    // TODO: Make this thread-safe.
     public static List<PlayerIdentifier> playerRefreshTokenPairs = new ArrayList<>();
 
     // This isn't really "good" practice, but for now it's fine.
@@ -29,14 +34,18 @@ public class SecretsStorage {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    private static final Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json");
-    private static final Logger log = LoggerFactory.getLogger(SecretsStorage.class);
+    private static final Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json.enc");
+    private static final Path ENCRYPTION_ERRORS_FOLDER = Path.of("config", "encryption_errors");
 
     private static final Gson GSON = new Gson();
     private static final String REFRESH_TOKEN_KEY = "refresh_tokens";
 
-    private static final int ITERATIONS = 650_535;
+    private static final int ITERATIONS = 1_000_000;
+
     private static final int KEY_LENGTH = 256;
+    private static final int AUTHENTICATION_TAG_LENGTH = 128;
+
+    private static final String BASE_ENCRYPTION_ALGORITHM = "AES";
     private static final String ENCRYPTION_ALGORITHM = "AES/GCM/NoPadding";
     private static final String KEY_DERIVING_ALGORITHM = "PBKDF2WithHmacSHA256";
 
@@ -46,17 +55,19 @@ public class SecretsStorage {
     public static void setPassPhrase(String newPassPhrase) {
         passPhrase = newPassPhrase;
     }
+
     public static boolean isPassPhraseSet() {
         return !passPhrase.isEmpty();
     }
 
     /**
      * Saves secrets if the passphrase is available, or we don't have to encrypt the refresh tokens.
+     *
      * @return Success (true = success, false = failure)
      */
     public static boolean save() throws UncheckedIOException {
         try {
-            if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+            if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
             }
 
@@ -75,17 +86,19 @@ public class SecretsStorage {
         } catch (GeneralSecurityException e) {
             log.warn("Tried to decrypt/encrypt and something went wrong. " +
                     "This can just be an invalid passphrase (private key derived from the passphrase)");
+            handleEncryptionError(e);
             return false;
         }
     }
 
     /**
      * Loads secrets if the passphrase is available or we don't have to encrypt the refresh tokens.
+     *
      * @return Success (true = success, false = failure, if there is no file it is treated as a success)
      */
-    public static boolean load() throws UncheckedIOException{
+    public static boolean load() throws UncheckedIOException {
         try {
-            if (passPhrase.isEmpty() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+            if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
                 throw new RuntimeException("No Passphrase");
             }
             if (!Files.exists(FILE_TO_SAVE_TO)) return true;
@@ -107,6 +120,7 @@ public class SecretsStorage {
         } catch (GeneralSecurityException e) {
             log.warn("Tried to decrypt/encrypt and something went wrong. " +
                     "This can just be an invalid passphrase (private key derived from the passphrase)");
+            handleEncryptionError(e);
             return false;
         }
     }
@@ -130,24 +144,26 @@ public class SecretsStorage {
 
             byte[] ivAndSalt = new byte[salt.length + iv.length];
             System.arraycopy(salt, 0, ivAndSalt, 0, salt.length);
-            System.arraycopy(iv, 0, ivAndSalt, salt.length - 1, iv.length);
+            System.arraycopy(iv, 0, ivAndSalt, salt.length, iv.length);
+
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(AUTHENTICATION_TAG_LENGTH, iv);
+
+            cipher.init(Cipher.ENCRYPT_MODE, deriveKey(passPhraseChars, salt), gcmSpec);
 
             cipher.updateAAD(ivAndSalt);
-            cipher.update(decrypted);
 
-            cipher.init(Cipher.ENCRYPT_MODE, deriveKey(passPhraseChars, salt));
-
-            byte[] encrypted = cipher.doFinal();
+            byte[] encrypted = cipher.doFinal(decrypted);
             byte[] result = new byte[encrypted.length + ivAndSalt.length];
 
-            System.arraycopy(ivAndSalt, 0, result, encrypted.length - 1, ivAndSalt.length);
-            System.arraycopy(encrypted, 0, result, 0, encrypted.length);
+            System.arraycopy(ivAndSalt, 0, result, 0, ivAndSalt.length);
+            System.arraycopy(encrypted, 0, result, ivAndSalt.length, encrypted.length);
 
             return result;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);
         }
     }
+
     private static byte[] decrypt(String passPhrase, byte[] encrypted) throws NoSuchPaddingException,
             InvalidKeyException,
             IllegalBlockSizeException,
@@ -158,38 +174,53 @@ public class SecretsStorage {
             char[] passPhraseChars = new char[passPhrase.length()];
             passPhrase.getChars(0, passPhraseChars.length, passPhraseChars, 0);
 
-            byte[] salt = Arrays.copyOfRange(encrypted, 0, SALT_LENGTH - 1);
-            byte[] iv = Arrays.copyOfRange(encrypted, SALT_LENGTH - 1, IV_LENGTH - 1);
+            byte[] salt = Arrays.copyOfRange(encrypted, 0, SALT_LENGTH);
+            byte[] iv = Arrays.copyOfRange(encrypted, SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
 
             byte[] ivAndSalt = new byte[salt.length + iv.length];
             System.arraycopy(salt, 0, ivAndSalt, 0, salt.length);
-            System.arraycopy(iv, 0, ivAndSalt, salt.length - 1, iv.length);
+            System.arraycopy(iv, 0, ivAndSalt, salt.length, iv.length);
+
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(AUTHENTICATION_TAG_LENGTH, iv);
 
             byte[] encryptedData =
                     Arrays.copyOfRange(encrypted,
-                            ivAndSalt.length - 1,
-                            encrypted.length - 1);
+                            ivAndSalt.length,
+                            encrypted.length);
 
             SecretKey key = deriveKey(passPhraseChars, salt);
 
-            cipher.init(Cipher.DECRYPT_MODE, key);
+            cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
 
             cipher.updateAAD(ivAndSalt);
-            cipher.update(encryptedData);
 
-            return cipher.doFinal();
-        } catch (NoSuchAlgorithmException e) {
+            return cipher.doFinal(encryptedData);
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);
         }
     }
+
     private static SecretKey deriveKey(char[] password, byte[] salt) {
         try {
             PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
             SecretKeyFactory factory = SecretKeyFactory.getInstance(KEY_DERIVING_ALGORITHM);
 
-            return factory.generateSecret(spec);
+            byte[] secretKey = factory.generateSecret(spec).getEncoded();
+            return new SecretKeySpec(secretKey, BASE_ENCRYPTION_ALGORITHM);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
+        }
+    }
+    private static void handleEncryptionError(GeneralSecurityException e) throws UncheckedIOException {
+        try {
+            if (!Files.exists(ENCRYPTION_ERRORS_FOLDER)) Files.createDirectories(ENCRYPTION_ERRORS_FOLDER);
+            Files.writeString(ENCRYPTION_ERRORS_FOLDER
+                            .resolve(Path.of(UUID.randomUUID().toString())),
+                    e.getMessage() + "\n" +
+                            Arrays.toString(e.getStackTrace()),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e1) {
+            throw new UncheckedIOException(e1);
         }
     }
 }

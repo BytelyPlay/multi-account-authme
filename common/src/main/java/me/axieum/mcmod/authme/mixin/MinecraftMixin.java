@@ -55,7 +55,9 @@ public abstract class MinecraftMixin implements YggdrasilAuthenticationServiceGe
         return this.authme$authService;
     }
 
-    @Inject(method = "destroy", at = @At("HEAD"))
+    // to be honest, I think the Runtime#getRuntime#addShutdownHook suffices.
+    // Also I don't think it is very good practice to use that in a Minecraft modification.
+    /*@Inject(method = "destroy", at = @At("HEAD"))
     private void destroy(CallbackInfo ci) {
         if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) SecretsStorage.save();
         else {
@@ -65,5 +67,5 @@ public abstract class MinecraftMixin implements YggdrasilAuthenticationServiceGe
                 LOGGER.warn("Couldn't save secrets.");
             }
         }
-    }
+    }*/
 }
