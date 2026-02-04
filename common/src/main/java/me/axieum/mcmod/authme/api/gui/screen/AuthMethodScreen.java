@@ -46,11 +46,10 @@ public class AuthMethodScreen extends Screen
         Identifier.fromNamespaceAndPath("authme", "widget/offline_button_focused")
     );
     /** The 'User Selection' textures. */
-    // TODO: Make the textures 20x20
     public static final WidgetSprites USER_SELECTION_TEXTURES = new WidgetSprites(
             Identifier.fromNamespaceAndPath("authme", "widget/user_selection"),
-            Identifier.fromNamespaceAndPath("authme", "widget/user_selection_disabled"),
-            Identifier.fromNamespaceAndPath("authme", "widget/user_selection_focused")
+            Identifier.fromNamespaceAndPath("authme", "widget/user_selection"),
+            Identifier.fromNamespaceAndPath("authme", "widget/user_selection")
     );
 
     /**
@@ -83,6 +82,8 @@ public class AuthMethodScreen extends Screen
             font
         ));
         AuthScreen.centerPosition(greetingWidget, this, 0, -20);
+
+        // TODO: Center all buttons
 
         // Add a button for the 'Microsoft' authentication method
         ImageButton msButton = new ImageButton(
