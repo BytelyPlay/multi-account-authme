@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
  * Loads the passphrase and loads secrets.
  */
 public class RequestPassPhraseScreen extends Screen {
-    private static final Logger log = LoggerFactory.getLogger(RequestPassPhraseScreen.class);
-
     private static final int PASS_PHRASE_INPUT_CENTER_OFFSET_X = -100;
     private static final int PASS_PHRASE_INPUT_CENTER_OFFSET_Y = -6;
 

@@ -23,7 +23,6 @@ import net.minecraft.network.chat.Component;
 import me.axieum.mcmod.authme.api.util.MicrosoftUtils;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
 
-import static me.axieum.mcmod.authme.api.AuthMe.CONFIG;
 import static me.axieum.mcmod.authme.api.AuthMe.LOGGER;
 
 /**
