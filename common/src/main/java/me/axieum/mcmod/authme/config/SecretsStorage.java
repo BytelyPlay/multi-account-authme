@@ -34,7 +34,7 @@ public class SecretsStorage {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    private static final Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json.enc");
+    private static final Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json");
     private static final Path ENCRYPTION_ERRORS_FOLDER = Path.of("config", "encryption_errors");
 
     private static final Gson GSON = new Gson();
@@ -77,9 +77,9 @@ public class SecretsStorage {
             String data = root.toString();
 
             byte[] stringBytes = data.getBytes(StandardCharsets.UTF_8);
-            byte[] encrypted = encrypt(passPhrase, stringBytes);
+            if (Config.LoginMethods.Microsoft.encryptRefreshTokens) stringBytes = encrypt(passPhrase, stringBytes);
 
-            Files.write(FILE_TO_SAVE_TO, encrypted);
+            Files.write(FILE_TO_SAVE_TO, stringBytes);
             return true;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
