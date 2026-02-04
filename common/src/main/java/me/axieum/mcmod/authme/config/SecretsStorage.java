@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-// TODO: Passphrase Encryption
 public class SecretsStorage {
     private static final Logger log = LoggerFactory.getLogger(SecretsStorage.class);
 
