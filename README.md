@@ -1,8 +1,7 @@
 This is a fork of https://github.com/axieum/authme/ that supports multiple accounts. \
 It also saves the refresh tokens so you don't have to keep authorizing it. \
-it's in very early ALPHA, if you really want, you can use it but \
-The security issues with storing refresh tokens in plain text far outweigh the benefits of this modification, once I have proper encryption \
-I won't think of this mod as a cybersecurity nightmare.
+it's in ALPHA, many changes are bound to be made, mostly UX though. The cybersecurity changes have been made. \
+I'm not a cybersecurity specialist so I wouldn't expect my encryption to be top-notch.
 
 # This wouldn't even have been considered if it wasn't for axieum with his original project ALL CREDIT GOES TO HIM.
 
