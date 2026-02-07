@@ -28,7 +28,10 @@ public class UserSelectionScreen extends Screen {
         Button lastButton = null;
 
         if (!SecretsStorage.isPassPhraseSet() &&
-                Config.LoginMethods.Microsoft.encryptRefreshTokens) minecraft.setScreen(new RequestPassPhraseScreen(this));
+                Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+            minecraft.setScreen(new RequestPassPhraseScreen(this));
+            return;
+        }
 
         for (int i = 0; i < SecretsStorage.playerRefreshTokenPairs.size(); i++) {
             PlayerIdentifier identifier = SecretsStorage.playerRefreshTokenPairs.get(i);
