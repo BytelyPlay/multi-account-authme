@@ -8,8 +8,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Loads the passphrase and loads secrets.
@@ -36,8 +34,8 @@ public class RequestPassPhraseScreen extends Screen {
     public RequestPassPhraseScreen(Screen successScreen) {
         super(
                 Component
-                .translatable("gui.authme.request_pass_phrase.title")
-                .withColor(CommonColors.GREEN)
+                        .translatable("gui.authme.request_pass_phrase.title")
+                        .withColor(CommonColors.GREEN)
         );
         this.successScreen = successScreen;
     }
@@ -57,14 +55,23 @@ public class RequestPassPhraseScreen extends Screen {
         Button confirm = new Button.Builder(Component
                 .translatable("gui.authme.request_pass_phrase.confirm_button"),
                 (button) -> {
-            SecretsStorage.setPassPhrase(input.getValue());
-            if (SecretsStorage.load()) {
-                minecraft.setScreen(successScreen);
-            } else {
-                labelContent = Component.translatable("gui.authme.request_pass_phrase.label.wrong");
-                SecretsStorage.setPassPhrase("");
-            }
-        })
+                    SecretsStorage.setPassPhrase(input.getValue());
+                    labelContent = Component.translatable("gui.authme.request_pass_phrase.label.waiting");
+
+                    SecretsStorage.load()
+                            .thenAccept((result) -> {
+                        if (result) {
+                            minecraft.doRunTask(() -> {
+                                minecraft.setScreen(successScreen);
+                            });
+                        } else {
+                            minecraft.doRunTask(() -> {
+                                labelContent = Component.translatable("gui.authme.request_pass_phrase.label.wrong");
+                                SecretsStorage.setPassPhrase("");
+                            });
+                        }
+                    });
+                })
                 .bounds(width / 2 + CONFIRM_BUTTON_CENTER_OFFSET_X,
                         height / 2 + CONFIRM_BUTTON_CENTER_OFFSET_Y,
                         CONFIRM_BUTTON_SIZE_X, CONFIRM_BUTTON_SIZE_Y)

@@ -7,6 +7,12 @@ import me.axieum.mcmod.authme.config.SecretsStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Reader;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * The multi-platform common mod.
  */
@@ -30,6 +36,11 @@ public final class AuthMe
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
     /**
+     * Virtual Thread Executor Service
+     */
+    public static final ExecutorService VIRTUAL_EXECUTOR_SERVICE = Executors.newVirtualThreadPerTaskExecutor();
+
+    /**
      * The mod configuration.
      */
     public static final Configurator CONFIG = new Configurator(MOD_ID);
@@ -48,15 +59,24 @@ public final class AuthMe
         CONFIG.register(Config.class);
 
         if (!Config.LoginMethods.Microsoft.encryptRefreshTokens) {
-            if (!SecretsStorage.load()) {
-                LOGGER.warn("Couldn't load secrets.");
+            try {
+                SecretsStorage.load()
+                        .thenAccept((result) -> {
+                    if (!result) LOGGER.warn("Couldn't load secrets.");
+                });
+            } catch (CompletionException e) {
+                LOGGER.error("Concurrency error while saving secrets.", e);
             }
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (Config.LoginMethods.Microsoft.encryptRefreshTokens && !SecretsStorage.isPassPhraseSet()) return;
-            if (!SecretsStorage.save()) {
-                LOGGER.warn("Couldn't save secrets.");
+            try {
+                if (!SecretsStorage.save().join()) {
+                    LOGGER.warn("Couldn't save secrets.");
+                }
+            } catch (CompletionException e) {
+                LOGGER.error("Concurrency error while saving secrets.", e);
             }
         }));
     }

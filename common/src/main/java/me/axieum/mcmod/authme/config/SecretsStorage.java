@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class SecretsStorage {
     private static final Logger log = LoggerFactory.getLogger(SecretsStorage.class);
@@ -64,64 +65,68 @@ public class SecretsStorage {
      *
      * @return Success (true = success, false = failure)
      */
-    public static boolean save() throws UncheckedIOException {
-        try {
-            if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
-                throw new RuntimeException("No Passphrase");
+    public static CompletableFuture<Boolean> save() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+                    throw new RuntimeException("No Passphrase");
+                }
+
+                JsonObject root = new JsonObject();
+                root.add(REFRESH_TOKEN_KEY, GSON.toJsonTree(playerRefreshTokenPairs));
+
+                String data = root.toString();
+
+                byte[] stringBytes = data.getBytes(StandardCharsets.UTF_8);
+                if (Config.LoginMethods.Microsoft.encryptRefreshTokens) stringBytes = encrypt(passPhrase, stringBytes);
+
+                Files.write(FILE_TO_SAVE_TO, stringBytes);
+                return true;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } catch (GeneralSecurityException e) {
+                log.warn("Tried to decrypt/encrypt and something went wrong. " +
+                        "This can just be an invalid passphrase (private key derived from the passphrase)");
+                handleEncryptionError(e);
+                return false;
             }
-
-            JsonObject root = new JsonObject();
-            root.add(REFRESH_TOKEN_KEY, GSON.toJsonTree(playerRefreshTokenPairs));
-
-            String data = root.toString();
-
-            byte[] stringBytes = data.getBytes(StandardCharsets.UTF_8);
-            if (Config.LoginMethods.Microsoft.encryptRefreshTokens) stringBytes = encrypt(passPhrase, stringBytes);
-
-            Files.write(FILE_TO_SAVE_TO, stringBytes);
-            return true;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (GeneralSecurityException e) {
-            log.warn("Tried to decrypt/encrypt and something went wrong. " +
-                    "This can just be an invalid passphrase (private key derived from the passphrase)");
-            handleEncryptionError(e);
-            return false;
-        }
+        }, AuthMe.VIRTUAL_EXECUTOR_SERVICE);
     }
 
     /**
-     * Loads secrets if the passphrase is available or we don't have to encrypt the refresh tokens.
+     * Loads secrets if the passphrase is available, or we don't have to encrypt the refresh tokens.
      *
      * @return Success (true = success, false = failure, if there is no file it is treated as a success)
      */
-    public static boolean load() throws UncheckedIOException {
-        try {
-            if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
-                throw new RuntimeException("No Passphrase");
+    public static CompletableFuture<Boolean> load() throws UncheckedIOException {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (!isPassPhraseSet() && Config.LoginMethods.Microsoft.encryptRefreshTokens) {
+                    throw new RuntimeException("No Passphrase");
+                }
+                if (!Files.exists(FILE_TO_SAVE_TO)) return true;
+
+                byte[] fileData = Files.readAllBytes(FILE_TO_SAVE_TO);
+                if (Config.LoginMethods.Microsoft.encryptRefreshTokens) fileData = decrypt(passPhrase, fileData);
+
+                JsonObject root = GSON.fromJson(new String(fileData, StandardCharsets.UTF_8), JsonObject.class);
+                JsonElement element = root.get(REFRESH_TOKEN_KEY);
+
+                playerRefreshTokenPairs = GSON.fromJson(element, new TypeToken<
+                        ArrayList<PlayerIdentifier>
+                        >() {
+                }.getType());
+
+                return true;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } catch (GeneralSecurityException e) {
+                log.warn("Tried to decrypt/encrypt and something went wrong. " +
+                        "This can just be an invalid passphrase (private key derived from the passphrase)");
+                handleEncryptionError(e);
+                return false;
             }
-            if (!Files.exists(FILE_TO_SAVE_TO)) return true;
-
-            byte[] fileData = Files.readAllBytes(FILE_TO_SAVE_TO);
-            if (Config.LoginMethods.Microsoft.encryptRefreshTokens) fileData = decrypt(passPhrase, fileData);
-
-            JsonObject root = GSON.fromJson(new String(fileData, StandardCharsets.UTF_8), JsonObject.class);
-            JsonElement element = root.get(REFRESH_TOKEN_KEY);
-
-            playerRefreshTokenPairs = GSON.fromJson(element, new TypeToken<
-                    ArrayList<PlayerIdentifier>
-                    >() {
-            }.getType());
-
-            return true;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (GeneralSecurityException e) {
-            log.warn("Tried to decrypt/encrypt and something went wrong. " +
-                    "This can just be an invalid passphrase (private key derived from the passphrase)");
-            handleEncryptionError(e);
-            return false;
-        }
+        }, AuthMe.VIRTUAL_EXECUTOR_SERVICE);
     }
 
     private static byte[] encrypt(String passPhrase, byte[] decrypted) throws NoSuchAlgorithmException,
