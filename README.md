@@ -8,3 +8,4 @@ I'm not a cybersecurity specialist so I wouldn't expect my encryption to be top-
 # TODO
 1. Get better button textures for the user selection menu.
 2. Save secrets periodically, not just on startup/shutdown
+3. Switch to Aargon2 instead of PBKDF2WithHmacSHA256
