@@ -10,6 +10,8 @@ import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +19,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +42,8 @@ public class SecretsStorage {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private static final Path FILE_TO_SAVE_TO = Path.of("./config/" + AuthMe.MOD_ID + "_secrets.json");
-    private static final Path ENCRYPTION_ERRORS_FOLDER = Path.of("config", "encryption_errors");
+    private static final Path ENCRYPTION_ERRORS_FILE = Path.of("config",
+            "multi_acc_authme_encryption_errors.txt");
 
     private static final Gson GSON = new Gson();
     private static final String REFRESH_TOKEN_KEY = "refresh_tokens";
@@ -78,7 +86,8 @@ public class SecretsStorage {
                 String data = root.toString();
 
                 byte[] stringBytes = data.getBytes(StandardCharsets.UTF_8);
-                if (Config.LoginMethods.Microsoft.encryptRefreshTokens) stringBytes = encrypt(passPhrase, stringBytes);
+                if (Config.LoginMethods.Microsoft.encryptRefreshTokens)
+                    stringBytes = encrypt(passPhrase, stringBytes);
 
                 Files.write(FILE_TO_SAVE_TO, stringBytes);
                 return true;
@@ -86,8 +95,8 @@ public class SecretsStorage {
                 throw new UncheckedIOException(e);
             } catch (GeneralSecurityException e) {
                 log.warn("Tried to decrypt/encrypt and something went wrong. " +
-                        "This can just be an invalid passphrase (private key derived from the passphrase)");
-                handleEncryptionError(e);
+                        "This can just be an invalid" +
+                        " passphrase (private key derived from the passphrase), e");
                 return false;
             }
         }, AuthMe.VIRTUAL_EXECUTOR_SERVICE);
@@ -122,8 +131,8 @@ public class SecretsStorage {
                 throw new UncheckedIOException(e);
             } catch (GeneralSecurityException e) {
                 log.warn("Tried to decrypt/encrypt and something went wrong. " +
-                        "This can just be an invalid passphrase (private key derived from the passphrase)");
-                handleEncryptionError(e);
+                        "This can just be an invalid passphrase " +
+                        "(private key derived from the passphrase)", e);
                 return false;
             }
         }, AuthMe.VIRTUAL_EXECUTOR_SERVICE);
@@ -213,18 +222,6 @@ public class SecretsStorage {
             return new SecretKeySpec(secretKey, BASE_ENCRYPTION_ALGORITHM);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
-        }
-    }
-    private static void handleEncryptionError(GeneralSecurityException e) throws UncheckedIOException {
-        try {
-            if (!Files.exists(ENCRYPTION_ERRORS_FOLDER)) Files.createDirectories(ENCRYPTION_ERRORS_FOLDER);
-            Files.writeString(ENCRYPTION_ERRORS_FOLDER
-                            .resolve(Path.of(UUID.randomUUID().toString())),
-                    e.getMessage() + "\n" +
-                            Arrays.toString(e.getStackTrace()),
-                    StandardCharsets.UTF_8);
-        } catch (IOException e1) {
-            throw new UncheckedIOException(e1);
         }
     }
 }
