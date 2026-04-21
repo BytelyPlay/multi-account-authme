@@ -224,4 +224,5 @@ public class SecretsStorage {
             throw new RuntimeException(e);
         }
     }
+    private SecretsStorage() {};
 }
