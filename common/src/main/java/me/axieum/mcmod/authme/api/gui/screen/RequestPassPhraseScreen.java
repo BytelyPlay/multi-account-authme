@@ -1,7 +1,7 @@
 package me.axieum.mcmod.authme.api.gui.screen;
 
 import me.axieum.mcmod.authme.config.SecretsStorage;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -61,11 +61,11 @@ public class RequestPassPhraseScreen extends Screen {
                     SecretsStorage.load()
                             .thenAccept((result) -> {
                         if (result) {
-                            minecraft.doRunTask(() -> {
+                            minecraft.schedule(() -> {
                                 minecraft.setScreen(successScreen);
                             });
                         } else {
-                            minecraft.doRunTask(() -> {
+                            minecraft.schedule(() -> {
                                 labelContent = Component.translatable("gui.authme.request_pass_phrase.label.wrong");
                                 SecretsStorage.setPassPhrase("");
                             });
@@ -82,10 +82,10 @@ public class RequestPassPhraseScreen extends Screen {
     }
 
     @Override
-    public void render(@NonNull GuiGraphics graphics, int i, int j, float f) {
-        super.render(graphics, i, j, f);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int i, int j, float f) {
+        super.extractRenderState(graphics, i, j, f);
 
-        graphics.drawString(minecraft.font,
+        graphics.text(minecraft.font,
                 labelContent,
                 width / 2 + LABEL_PHRASE_INPUT_CENTER_OFFSET_X,
                 height / 2 + LABEL_PHRASE_INPUT_CENTER_OFFSET_Y,
