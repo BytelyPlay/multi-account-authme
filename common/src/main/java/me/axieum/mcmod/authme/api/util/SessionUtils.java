@@ -103,12 +103,13 @@ public final class SessionUtils
 
         // Necessary for Realms to re-check for a valid session
         synchronized (RealmsClient.class) {
-            RealmsClient realmsClient = RealmsClientAccessor.init(user.getSessionId(), user.getName(), client);
+            RealmsClient realmsClient = RealmsClientAccessor.
+                    init(user.getSessionId(), user.getName(), client);
             RealmsClientAccessor.setRealmsClientInstance(realmsClient);
-            RealmsClient realmsClient = RealmsClientAccessor
-                    .init(user.getSessionId(), user.getName(), client);
-            RealmsClientAccessor.setRealmsClientInstance(realmsClient);
-            ((MinecraftAccessor) client).setRealmsDataFetcher(new RealmsDataFetcher(realmsClient));
+            ((MinecraftAccessor) client)
+                    .setRealmsDataFetcher(
+                            new RealmsDataFetcher(realmsClient)
+                    );
             RealmsAvailabilityAccessor.setFuture(null);
         }
 
