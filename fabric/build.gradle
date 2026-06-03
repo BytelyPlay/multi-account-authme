@@ -40,13 +40,6 @@ processResources {
     inputs.property 'minecraft_version', project.minecraft_version
     inputs.property 'fabric_loader_version_range', project.fabric_loader_version_range
 
-    // access widener
-    processResources {
-        from(rootProject.file("common/src/main/resources")) {
-            include(project.mod_id + ".accesswidener")
-        }
-    }
-
     // fabric.mod.json
     filesMatching('fabric.mod.json') {
         expand([
@@ -68,9 +61,12 @@ jar {
 }
 
 shadowJar {
+    dependsOn jar
+    mainSpec.sourcePaths.clear()
+    from zipTree(jar.archiveFile)
     configurations = [project.configurations.shadowCommon]
     archiveAppendix.set project.name
-    archiveClassifier.set 'dev-shadow'
+    archiveClassifier.unset()
 }
 
 sourcesJar {
@@ -81,14 +77,16 @@ sourcesJar {
 }
 
 javadocJar {
-    def commonJavadocs = project(':common').tasks.javadocJar
-    dependsOn commonJavadocs
-    from commonJavadocs.archiveFile.map { zipTree(it) }
     archiveAppendix.set project.name
 }
 
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
     }
 }

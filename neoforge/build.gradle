@@ -61,28 +61,30 @@ jar {
 }
 
 shadowJar {
+    dependsOn jar
+    mainSpec.sourcePaths.clear()
+    from zipTree(jar.archiveFile)
+    exclude 'fabric.mod.json'
     configurations = [project.configurations.shadowCommon]
     archiveAppendix.set project.name
-    archiveClassifier.set 'dev-shadow'
-    exclude 'architectury.common.json'
+    archiveClassifier.unset()
 }
 
 sourcesJar {
-    def commonSources = project(':common').tasks.sourcesJar
-    dependsOn commonSources
-    from commonSources.archiveFile.map { zipTree(it) }
     archiveAppendix.set project.name
 }
 
 javadocJar {
-    def commonJavadocs = project(':common').tasks.javadocJar
-    dependsOn commonJavadocs
-    from commonJavadocs.archiveFile.map { zipTree(it) }
     archiveAppendix.set project.name
 }
 
-components.java {
-    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
-        skip()
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
     }
 }

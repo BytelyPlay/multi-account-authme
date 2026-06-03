@@ -23,3 +23,16 @@ processResources {
     // pack.mcmeta
     filesMatching('pack.mcmeta') { expand(['mod_name': project.mod_name]) }
 }
+
+jar {
+    archiveAppendix.set project.name
+    archiveClassifier.set 'dev'
+}
+
+sourcesJar {
+    archiveAppendix.set project.name
+}
+
+javadocJar {
+    archiveAppendix.set project.name
+}
