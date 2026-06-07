@@ -17,7 +17,8 @@ configurations {
 
 dependencies {
     common(project(path: ':common')) { transitive false }
-    shadowCommon(project(path: ':common', configuration: 'transformProductionNeoForge')) { transitive false }
+    shadowCommon(project(path: ':common', configuration: 'transformProductionNeoForge'))
+            { transitive false }
 
     neoForge "net.neoforged:neoforge:${project.neoforge_version}"
 
