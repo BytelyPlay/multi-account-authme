@@ -188,7 +188,7 @@ public class MicrosoftAuthScreen extends AuthScreen
                 SessionUtils.setUser(user);
                 // Add a toast that greets the player
                 SystemToast.add(
-                    minecraft.getToastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                    minecraft.gui.toastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
                     Component.translatable("gui.authme.toast.greeting", Component.literal(user.getName())), null
                 );
                 // Mark the task as successful, in turn closing the screen
@@ -210,8 +210,8 @@ public class MicrosoftAuthScreen extends AuthScreen
                 client.execute(() -> {
                     statusWidget.setMessage(Component.translatable(key).withStyle(ChatFormatting.RED));
                     AuthScreen.centerPosition(statusWidget, this, 0, 15);
+                    cancelBtn.setMessage(Component.translatable("gui.back"));
                 });
-                cancelBtn.setMessage(Component.translatable("gui.back"));
                 return null; // return a default value
             });
     }
