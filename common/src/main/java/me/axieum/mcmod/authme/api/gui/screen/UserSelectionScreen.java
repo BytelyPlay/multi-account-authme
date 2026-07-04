@@ -29,7 +29,7 @@ public class UserSelectionScreen extends Screen {
 
         if (!SecretsStorage.isPassPhraseSet() &&
                 Config.LoginMethods.Microsoft.encryptRefreshTokens) {
-            minecraft.setScreen(new RequestPassPhraseScreen(this));
+            minecraft.setScreenAndShow(new RequestPassPhraseScreen(this));
             return;
         }
 
@@ -37,7 +37,7 @@ public class UserSelectionScreen extends Screen {
             PlayerIdentifier identifier = SecretsStorage.playerRefreshTokenPairs.get(i);
             // TODO: Images perhaps just a Steve but maybe the player skin head later on
             Button button = new Button.Builder(Component.literal(identifier.username()), (press) -> {
-                minecraft.setScreen(new MicrosoftAuthScreen(this, successScreen, identifier.refreshToken()));
+                minecraft.setScreenAndShow(new MicrosoftAuthScreen(this, successScreen, identifier.refreshToken()));
             })
                     .bounds(
                             i + (lastButton == null ? GAP_BETWEEN_BUTTONS : lastButton.getX() + lastButton.getWidth() + GAP_BETWEEN_BUTTONS),

@@ -62,7 +62,7 @@ public class RequestPassPhraseScreen extends Screen {
                             .thenAccept((result) -> {
                         if (result) {
                             minecraft.schedule(() -> {
-                                minecraft.setScreen(successScreen);
+                                minecraft.setScreenAndShow(successScreen);
                             });
                         } else {
                             minecraft.schedule(() -> {

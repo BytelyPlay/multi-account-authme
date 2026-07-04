@@ -83,7 +83,7 @@ public class MicrosoftAuthScreen extends AuthScreen
 
         if (!SecretsStorage.isPassPhraseSet() &&
                 Config.LoginMethods.Microsoft.encryptRefreshTokens) {
-            minecraft.setScreen(new RequestPassPhraseScreen(this));
+            minecraft.setScreenAndShow(new RequestPassPhraseScreen(this));
             return;
         }
 

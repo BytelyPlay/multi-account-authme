@@ -152,7 +152,7 @@ public class AuthMethodScreen extends Screen
         ImageButton userSelectionButton = new ImageButton(
                 width / 2 + 14, height / 2 - 5, 20, 20,
                 USER_SELECTION_TEXTURES,
-                button -> minecraft.setScreen(new UserSelectionScreen(parentScreen))
+                button -> minecraft.setScreenAndShow(new UserSelectionScreen(parentScreen))
         );
         userSelectionButton.setTooltip(Tooltip.create(Component.translatable("gui.authme.method.button.user_selection")));
         addRenderableWidget(userSelectionButton);
